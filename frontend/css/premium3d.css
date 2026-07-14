@@ -71,25 +71,32 @@ html { scroll-behavior: smooth; }
     overflow: hidden;
 }
 
-/* provided owner/vehicle photo backdrop — desaturated to stay monochrome, darkened for legibility */
+/* provided owner/vehicle photo — the main hero image, shown prominently */
 .pm3d-hero-photo {
     position: absolute;
     inset: 0;
     z-index: 0;
     background-size: cover;
-    background-position: center 30%;
+    background-position: center 28%;
     background-repeat: no-repeat;
-    filter: grayscale(0.85) contrast(1.05) brightness(0.55);
-    opacity: 0.5;
+    filter: contrast(1.04) saturate(1.05);
+    transform: scale(1.02);
+    animation: pm3dHeroPan 26s ease-in-out infinite alternate;
 }
 .pm3d-hero-photo::after {
     content: '';
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.15) 100%),
-        linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.75) 100%);
+        linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.35) 42%, rgba(0,0,0,0.05) 100%),
+        linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.45) 100%);
 }
+@keyframes pm3dHeroPan {
+    from { transform: scale(1.02) translate3d(0, 0, 0); }
+    to   { transform: scale(1.08) translate3d(-1.5%, -1%, 0); }
+}
+/* the photo hero is a full-height cinematic banner */
+.pm3d-home .pm3d-photo-hero { min-height: 88vh; }
 
 /* faint technical blueprint grid behind the model */
 .pm3d-blueprint {
@@ -276,6 +283,20 @@ html { scroll-behavior: smooth; }
 #pm3d-dash-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 .pm3d-dash-stage .pm3d-blueprint { z-index: 0; }
 
+/* My Vehicles 3D stage — provides the glass vars locally (page isn't .pm3d-home) */
+.pm3d-veh-stage {
+    --g-line: rgba(255, 255, 255, 0.14);
+    --g-bg: rgba(255, 255, 255, 0.03);
+    --g-text: #eef1f6;
+    --g-muted: #9aa3b2;
+    height: 60vh;
+    min-height: 440px;
+    margin-bottom: 0;
+}
+#pm3d-veh-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+.pm3d-veh-stage .pm3d-blueprint,
+.pm3d-veh-stage .pm3d-fog { z-index: 0; }
+
 .pm3d-panel {
     position: absolute;
     z-index: 3;
@@ -342,5 +363,6 @@ html { scroll-behavior: smooth; }
 
 @media (prefers-reduced-motion: reduce) {
     .pm3d-blueprint { animation: none; }
+    .pm3d-hero-photo { animation: none; transform: none; }
     html { scroll-behavior: auto; }
 }

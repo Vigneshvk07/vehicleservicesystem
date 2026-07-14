@@ -53,10 +53,6 @@
     <!-- GSAP + ScrollTrigger for high-performance scroll animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <!-- Three.js for the holographic wireframe vehicle -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- GLTFLoader for optional photoreal .glb/.gltf vehicle models -->
-    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
         .vibrate-idle {
             animation: vibrate 0.15s linear infinite;
@@ -150,41 +146,26 @@
         </nav>
     </header>
 
-    <!-- Full-Screen 3D Holographic Wireframe Hero -->
-    <section class="hero">
-        <!-- Provided owner/vehicle photo as a cinematic hero backdrop -->
+    <!-- Full-Screen Cinematic Photo Hero (provided image) -->
+    <section class="hero pm3d-photo-hero">
         <div class="pm3d-hero-photo" style="background-image:url('images/bikehome.jpg');"></div>
-        <div class="pm3d-blueprint"></div>
         <div class="pm3d-fog"></div>
-        <!-- Three.js CAD/X-ray vehicle renders here -->
-        <canvas id="pm3d-hero-canvas"></canvas>
 
         <div class="hero-content">
-            <span class="hero-eyebrow">CAD &middot; X-Ray &middot; Blueprint</span>
+            <span class="hero-eyebrow">Premium Vehicle Care</span>
             <% if (user != null) { %>
                 <h2>Welcome back,<br><span class="accent"><%= ownerName %></span></h2>
                 <% if (hasActiveBooking) { %>
-                    <p>Your <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>) is in the bay — current status <strong><%= serviceStatus.replace("_", " ") %></strong>. Explore its live digital twin.</p>
+                    <p>Your <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>) is in the bay — current status <strong><%= serviceStatus.replace("_", " ") %></strong>.</p>
                 <% } else { %>
-                    <p>Your <strong><%= vehicleModel %></strong>, rendered as a precision engineering blueprint. Book its next premium service.</p>
+                    <p>Your <strong><%= vehicleModel %></strong> is ready for its next premium service. View its 3D model in My Vehicles.</p>
                 <% } %>
                 <a href="bookservice.jsp" class="btn-ripple"><i class="fas fa-calendar-check"></i> Book a Service Appointment</a>
             <% } else { %>
                 <h2>Engineering<br><span class="accent">Precision Care</span></h2>
-                <p>A luxury automotive service experience — visualized as a live CAD blueprint. Book inspections, track repairs, and download certified GST invoices.</p>
+                <p>A luxury automotive service experience. Book inspections, track repairs, and download certified GST invoices.</p>
                 <a href="register.jsp" class="btn-ripple"><i class="fas fa-user-plus"></i> Join Us Now</a>
             <% } %>
-        </div>
-
-        <!-- Vehicle wireframe selector -->
-        <div class="pm3d-selector">
-            <span class="sel-label">Model</span>
-            <button class="pm3d-chip active" data-type="sedan" onclick="pm3dSelect('sedan', this)"><i class="fas fa-car-side"></i> Sedan</button>
-            <button class="pm3d-chip" data-type="suv" onclick="pm3dSelect('suv', this)"><i class="fas fa-car"></i> SUV</button>
-            <button class="pm3d-chip" data-type="hatchback" onclick="pm3dSelect('hatchback', this)"><i class="fas fa-car-side"></i> Hatchback</button>
-            <button class="pm3d-chip" data-type="bike" onclick="pm3dSelect('bike', this)"><i class="fas fa-motorcycle"></i> Bike</button>
-            <button class="pm3d-chip" data-type="truck" onclick="pm3dSelect('truck', this)"><i class="fas fa-truck"></i> Truck</button>
-            <button class="pm3d-chip" data-type="ev" onclick="pm3dSelect('ev', this)"><i class="fas fa-charging-station"></i> EV</button>
         </div>
 
         <div class="pm-scroll-cue">
@@ -258,39 +239,7 @@
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
     <script src="js/premium.js"></script>
-    <script src="js/premium3d.js"></script>
     <script>
-        // Boot the holographic wireframe vehicle, seeded from the user's DB vehicle type
-        // Photoreal models: drop .glb files at images/models/<type>.glb and they
-        // auto-load in place of the procedural wireframe (falls back if absent).
-        window.PM3D_MODELS = {
-            sedan:     "images/models/sedan.glb",
-            suv:       "images/models/suv.glb",
-            hatchback: "images/models/hatchback.glb",
-            bike:      "images/models/bike.glb",
-            truck:     "images/models/truck.glb",
-            ev:        "images/models/ev.glb"
-        };
-
-        window.addEventListener("DOMContentLoaded", () => {
-            const initialType = '<%= vehicleType %>' || 'sedan';
-            if (window.PM3D) {
-                PM3D.mount("pm3d-hero-canvas", initialType);
-                // reflect DB type in the selector highlight
-                const norm = PM3D.normalizeType(initialType);
-                document.querySelectorAll(".pm3d-chip").forEach(function (b) {
-                    b.classList.toggle("active", b.dataset.type === norm);
-                });
-            }
-        });
-
-        // Swap the displayed wireframe vehicle
-        function pm3dSelect(type, btn) {
-            document.querySelectorAll(".pm3d-chip").forEach(b => b.classList.remove("active"));
-            if (btn) btn.classList.add("active");
-            if (window.PM3D) PM3D.select(type);
-        }
-
         function estimateCost() {
             const selectEl = document.getElementById("cost-estimator");
             let baseCost = parseFloat(selectEl.options[selectEl.selectedIndex].dataset.cost);

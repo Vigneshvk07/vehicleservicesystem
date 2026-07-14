@@ -1,0 +1,18 @@
+3D Vehicle Models
+=================
+
+The .glb vehicle models in this folder are from the Kenney "Car Kit"
+(https://kenney.nl/assets/car-kit), released under the Creative Commons Zero
+(CC0 1.0 Universal / Public Domain) license.
+http://creativecommons.org/publicdomain/zero/1.0/
+
+Created / distributed by Kenney (www.kenney.nl).
+No attribution is required by the license, but credit is given here voluntarily.
+
+File mapping (renamed for this app):
+  sedan.glb      <- Car Kit "sedan"
+  suv.glb        <- Car Kit "suv"
+  hatchback.glb  <- Car Kit "hatchback-sports"
+  bike.glb       <- Car Kit "motorcycle"
+  truck.glb      <- Car Kit "truck"
+  ev.glb         <- Car Kit "sedan-sports"

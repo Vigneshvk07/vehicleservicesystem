@@ -74,8 +74,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/premium.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 </head>
-<body>
+<body class="premium-home">
+
+    <!-- Premium Loading Screen -->
+    <div id="pm-loader">
+        <img src="images/logo.png" alt="Logo" class="pm-loader-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3202/3202926.png'">
+        <div class="pm-loader-wheel"></div>
+        <div class="pm-loader-brand">Vehicle Care</div>
+        <div class="pm-loader-bar"><span></span></div>
+        <div class="pm-loader-pct">0%</div>
+    </div>
+    <div id="pm-mouse-light"></div>
 
     <!-- Sticky Header -->
     <header>
@@ -116,7 +129,7 @@
 
         <!-- 4 Count Counters -->
         <div class="dashboard-grid">
-            <div class="card">
+            <div class="card pm-reveal" data-reveal="up">
                 <div class="card-header-vss">
                     <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Loyalty Points Balance</span>
                     <div class="card-icon"><i class="fas fa-trophy" style="color:var(--secondary);"></i></div>
@@ -124,7 +137,7 @@
                 <div class="card-value"><%= user.getLoyaltyPoints() %> pts</div>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">Earn 10% points on online invoice checkouts.</div>
             </div>
-            <div class="card">
+            <div class="card pm-reveal" data-reveal="up">
                 <div class="card-header-vss">
                     <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Registered Vehicles</span>
                     <div class="card-icon"><i class="fas fa-car" style="color:var(--primary);"></i></div>
@@ -132,7 +145,7 @@
                 <div class="card-value"><%= vehicleCount %> Vehicles</div>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:8px;"><a href="myvehicles.jsp" style="color:var(--primary); text-decoration:none; font-weight:600;">Manage Garage <i class="fas fa-chevron-right"></i></a></div>
             </div>
-            <div class="card">
+            <div class="card pm-reveal" data-reveal="up">
                 <div class="card-header-vss">
                     <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Pending Payments</span>
                     <div class="card-icon"><i class="fas fa-wallet" style="color:var(--danger);"></i></div>
@@ -387,6 +400,7 @@
 
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/premium.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             <% if (request.getParameter("error") != null) { %>

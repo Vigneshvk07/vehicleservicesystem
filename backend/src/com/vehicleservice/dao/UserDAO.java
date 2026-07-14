@@ -166,6 +166,7 @@ public class UserDAO {
         user.setPasswordHash(rs.getString("password_hash"));
         user.setRole(rs.getString("role"));
         user.setProfilePic(rs.getString("profile_pic"));
+        user.setLoyaltyPoints(rs.getInt("loyalty_points"));
         user.setCreatedAt(rs.getTimestamp("created_at"));
         return user;
     }

@@ -44,8 +44,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <!-- Premium animated homepage theme -->
+    <link rel="stylesheet" href="css/premium.css">
     <!-- ChartJS for dashboard statistics integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- GSAP + ScrollTrigger for high-performance scroll animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <style>
         .vibrate-idle {
             animation: vibrate 0.15s linear infinite;
@@ -100,7 +105,20 @@
         }
     </style>
 </head>
-<body>
+<body class="premium-home">
+
+    <!-- Premium Loading Screen -->
+    <div id="pm-loader">
+        <img src="images/logo.png" alt="Logo" class="pm-loader-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3202/3202926.png'">
+        <div class="pm-loader-wheel"></div>
+        <div class="pm-loader-brand">Vehicle Care</div>
+        <div class="pm-loader-bar"><span></span></div>
+        <div class="pm-loader-pct">0%</div>
+    </div>
+
+    <!-- Ambient effects (mouse-follow light + floating icons) -->
+    <div id="pm-mouse-light"></div>
+    <div class="pm-float-icons" aria-hidden="true"></div>
 
     <!-- Sticky Header Navbar -->
     <header>
@@ -130,19 +148,43 @@
         </nav>
     </header>
 
-    <!-- Hero Showcase Section -->
+    <!-- Cinematic Full-Screen Hero -->
     <section class="hero">
-        <h2>Premium Vehicle Maintenance Services</h2>
-        <p>Book vehicle inspections online, upload documents, track real-time workshop repair timelines, and download certified GST invoices.</p>
-        <% if (user == null) { %>
-            <a href="register.jsp" class="btn-ripple"><i class="fas fa-user-plus"></i> Join Us Now</a>
-        <% } else { %>
-            <a href="bookservice.jsp" class="btn-ripple"><i class="fas fa-calendar-check"></i> Book a Service Appointment</a>
-        <% } %>
+        <!-- Layered cinematic background (parallax) -->
+        <div class="pm-hero-bg">
+            <div class="layer layer-photo pm-parallax"></div>
+            <div class="beam b1"></div>
+            <div class="beam b2"></div>
+            <div class="layer layer-vignette"></div>
+        </div>
+        <!-- Animated particles + smoke -->
+        <canvas id="pm-hero-canvas"></canvas>
+
+        <div class="hero-content">
+            <span class="hero-eyebrow"><i class="fas fa-bolt"></i> Precision Auto Care</span>
+            <% if (user != null) { %>
+                <h2>Welcome back, <span class="accent"><%= ownerName %></span></h2>
+                <% if (hasActiveBooking) { %>
+                    <p>Your <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>) is in the bay — current status: <strong><%= serviceStatus.replace("_", " ") %></strong>.</p>
+                <% } else { %>
+                    <p>Your <strong><%= vehicleModel %></strong> is ready for its next premium service. Book an appointment and track every step live.</p>
+                <% } %>
+                <a href="bookservice.jsp" class="btn-ripple"><i class="fas fa-calendar-check"></i> Book a Service Appointment</a>
+            <% } else { %>
+                <h2>Premium <span class="accent">Vehicle Maintenance</span> Services</h2>
+                <p>Book inspections online, upload documents, track real-time workshop repair timelines, and download certified GST invoices.</p>
+                <a href="register.jsp" class="btn-ripple"><i class="fas fa-user-plus"></i> Join Us Now</a>
+            <% } %>
+        </div>
+
+        <div class="pm-scroll-cue">
+            <div class="mouse"></div>
+            Scroll to explore
+        </div>
     </section>
 
     <!-- Realistic Animated Garage Arena -->
-    <div class="glass-container">
+    <div class="glass-container pm-reveal" data-reveal="up">
         <h3 class="section-title" style="text-align: center; margin-bottom: 10px;">
             <i class="fas fa-warehouse text-primary"></i> VSS Live Garage Tracker
         </h3>
@@ -185,6 +227,8 @@
                 <button class="demo-btn" onclick="changeDemoVehicle('bike', this)">Bike</button>
                 <button class="demo-btn" onclick="changeDemoVehicle('scooter', this)">Scooter</button>
                 <button class="demo-btn" onclick="changeDemoVehicle('truck', this)">Truck</button>
+                <button class="demo-btn" onclick="changeDemoVehicle('bus', this)">Bus</button>
+                <button class="demo-btn" onclick="changeDemoVehicle('ev', this)">EV</button>
             </div>
             <div style="border-left: 1px solid var(--border-color); padding-left: 15px;">
                 <span style="font-size: 13px; font-weight: 600; margin-right: 10px;">Change Status:</span>
@@ -198,7 +242,7 @@
     </div>
 
     <!-- Interactive Estimation Cost Widget -->
-    <div class="glass-container">
+    <div class="glass-container pm-reveal" data-reveal="left">
         <h3><i class="fas fa-calculator text-primary"></i> Service Cost Estimator</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
             <div>
@@ -232,7 +276,7 @@
     </div>
 
     <!-- Quick Features Overview -->
-    <div class="glass-container">
+    <div class="glass-container pm-reveal" data-reveal="right">
         <h3><i class="fas fa-star text-primary"></i> Our Features</h3>
         <div class="dashboard-grid" style="margin-top:20px;">
             <div class="card">
@@ -261,6 +305,7 @@
     <!-- Script triggers -->
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/premium.js"></script>
     <script>
         // Load initial vehicle and status on page load
         window.addEventListener("DOMContentLoaded", () => {
@@ -269,34 +314,38 @@
             loadVehicleShowcase(initialType, initialStatus);
         });
 
+        // Track demo state explicitly (status codes, not button labels)
+        let demoType = '<%= vehicleType %>' || 'car';
+        let demoStatus = '<%= serviceStatus %>' || 'RECEIVED';
+
+        const demoModelLabels = {
+            car: "Sedan Model S",
+            bike: "Sport Bike v2.0",
+            scooter: "Vespa S-125",
+            truck: "Flatbed Recovery Utility",
+            bus: "City Transit Coach",
+            ev: "Electric Model E"
+        };
+
         function changeDemoVehicle(type, btn) {
-            // Toggle active class
             btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            // Set dynamic metadata labels
+
+            demoType = type;
             document.getElementById("plate-type").innerText = type;
-            if (type === 'bike') document.getElementById("plate-model").innerText = "Sport Bike v2.0";
-            if (type === 'scooter') document.getElementById("plate-model").innerText = "Vespa S-125";
-            if (type === 'truck') document.getElementById("plate-model").innerText = "Flatbed Recovery Utility";
-            if (type === 'car') document.getElementById("plate-model").innerText = "Sedan Model S";
-            
-            const activeStatusBtn = document.querySelector('.demo-controls button[onclick*="changeDemoStatus"].active') || {innerText: 'RECEIVED'};
-            const currentStatus = activeStatusBtn.innerText || 'RECEIVED';
-            
-            loadVehicleShowcase(type, currentStatus);
+            if (demoModelLabels[type]) {
+                document.getElementById("plate-model").innerText = demoModelLabels[type];
+            }
+            loadVehicleShowcase(demoType, demoStatus);
         }
 
         function changeDemoStatus(status, btn) {
             btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
+            demoStatus = status;
             document.getElementById("plate-status").innerText = status;
-            
-            const activeTypeBtn = document.querySelector('.demo-controls button[onclick*="changeDemoVehicle"].active') || {innerText: 'car'};
-            const currentType = activeTypeBtn.innerText.toLowerCase() || 'car';
-            
-            loadVehicleShowcase(currentType, status);
+            loadVehicleShowcase(demoType, demoStatus);
         }
 
         function estimateCost() {

@@ -46,11 +46,15 @@
     <link rel="stylesheet" href="css/style.css">
     <!-- Premium animated homepage theme -->
     <link rel="stylesheet" href="css/premium.css">
+    <!-- Matte-black futuristic 3D theme (overrides the cinematic hero) -->
+    <link rel="stylesheet" href="css/premium3d.css">
     <!-- ChartJS for dashboard statistics integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- GSAP + ScrollTrigger for high-performance scroll animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- Three.js for the holographic wireframe vehicle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         .vibrate-idle {
             animation: vibrate 0.15s linear infinite;
@@ -105,7 +109,7 @@
         }
     </style>
 </head>
-<body class="premium-home">
+<body class="premium-home pm3d-home">
 
     <!-- Premium Loading Screen -->
     <div id="pm-loader">
@@ -115,10 +119,6 @@
         <div class="pm-loader-bar"><span></span></div>
         <div class="pm-loader-pct">0%</div>
     </div>
-
-    <!-- Ambient effects (mouse-follow light + floating icons) -->
-    <div id="pm-mouse-light"></div>
-    <div class="pm-float-icons" aria-hidden="true"></div>
 
     <!-- Sticky Header Navbar -->
     <header>
@@ -148,33 +148,39 @@
         </nav>
     </header>
 
-    <!-- Cinematic Full-Screen Hero -->
+    <!-- Full-Screen 3D Holographic Wireframe Hero -->
     <section class="hero">
-        <!-- Layered cinematic background (parallax) -->
-        <div class="pm-hero-bg">
-            <div class="layer layer-photo pm-parallax"></div>
-            <div class="beam b1"></div>
-            <div class="beam b2"></div>
-            <div class="layer layer-vignette"></div>
-        </div>
-        <!-- Animated particles + smoke -->
-        <canvas id="pm-hero-canvas"></canvas>
+        <div class="pm3d-blueprint"></div>
+        <div class="pm3d-fog"></div>
+        <!-- Three.js CAD/X-ray vehicle renders here -->
+        <canvas id="pm3d-hero-canvas"></canvas>
 
         <div class="hero-content">
-            <span class="hero-eyebrow"><i class="fas fa-bolt"></i> Precision Auto Care</span>
+            <span class="hero-eyebrow">CAD &middot; X-Ray &middot; Blueprint</span>
             <% if (user != null) { %>
-                <h2>Welcome back, <span class="accent"><%= ownerName %></span></h2>
+                <h2>Welcome back,<br><span class="accent"><%= ownerName %></span></h2>
                 <% if (hasActiveBooking) { %>
-                    <p>Your <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>) is in the bay — current status: <strong><%= serviceStatus.replace("_", " ") %></strong>.</p>
+                    <p>Your <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>) is in the bay — current status <strong><%= serviceStatus.replace("_", " ") %></strong>. Explore its live digital twin.</p>
                 <% } else { %>
-                    <p>Your <strong><%= vehicleModel %></strong> is ready for its next premium service. Book an appointment and track every step live.</p>
+                    <p>Your <strong><%= vehicleModel %></strong>, rendered as a precision engineering blueprint. Book its next premium service.</p>
                 <% } %>
                 <a href="bookservice.jsp" class="btn-ripple"><i class="fas fa-calendar-check"></i> Book a Service Appointment</a>
             <% } else { %>
-                <h2>Premium <span class="accent">Vehicle Maintenance</span> Services</h2>
-                <p>Book inspections online, upload documents, track real-time workshop repair timelines, and download certified GST invoices.</p>
+                <h2>Engineering<br><span class="accent">Precision Care</span></h2>
+                <p>A luxury automotive service experience — visualized as a live CAD blueprint. Book inspections, track repairs, and download certified GST invoices.</p>
                 <a href="register.jsp" class="btn-ripple"><i class="fas fa-user-plus"></i> Join Us Now</a>
             <% } %>
+        </div>
+
+        <!-- Vehicle wireframe selector -->
+        <div class="pm3d-selector">
+            <span class="sel-label">Model</span>
+            <button class="pm3d-chip active" data-type="sedan" onclick="pm3dSelect('sedan', this)"><i class="fas fa-car-side"></i> Sedan</button>
+            <button class="pm3d-chip" data-type="suv" onclick="pm3dSelect('suv', this)"><i class="fas fa-car"></i> SUV</button>
+            <button class="pm3d-chip" data-type="hatchback" onclick="pm3dSelect('hatchback', this)"><i class="fas fa-car-side"></i> Hatchback</button>
+            <button class="pm3d-chip" data-type="bike" onclick="pm3dSelect('bike', this)"><i class="fas fa-motorcycle"></i> Bike</button>
+            <button class="pm3d-chip" data-type="truck" onclick="pm3dSelect('truck', this)"><i class="fas fa-truck"></i> Truck</button>
+            <button class="pm3d-chip" data-type="ev" onclick="pm3dSelect('ev', this)"><i class="fas fa-charging-station"></i> EV</button>
         </div>
 
         <div class="pm-scroll-cue">
@@ -182,64 +188,6 @@
             Scroll to explore
         </div>
     </section>
-
-    <!-- Realistic Animated Garage Arena -->
-    <div class="glass-container pm-reveal" data-reveal="up">
-        <h3 class="section-title" style="text-align: center; margin-bottom: 10px;">
-            <i class="fas fa-warehouse text-primary"></i> VSS Live Garage Tracker
-        </h3>
-        <p style="text-align: center; margin-bottom: 25px; color: var(--text-muted);">
-            <% if (user != null && hasActiveBooking) { %>
-                Displaying real-time updates for <strong><%= ownerName %></strong>'s registered <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>).
-            <% } else { %>
-                Interact with the simulation panel below to preview our mechanical service steps!
-            <% } %>
-        </p>
-
-        <!-- Simulated Garage Box -->
-        <div class="garage-canvas-container" id="garage-container">
-            <div class="service-bay"></div>
-            <div class="hydraulic-lift"></div>
-            <!-- Dynamic Vector Vehicle -->
-            <div class="vehicle-avatar" id="vehicle-avatar"></div>
-        </div>
-
-        <!-- Personalization Plate Info -->
-        <div class="card" style="max-width: 600px; margin: 0 auto 25px auto;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-                <div><strong>Owner Name:</strong> <span id="plate-owner"><%= ownerName %></span></div>
-                <div><strong>Vehicle Class:</strong> <span id="plate-type" style="text-transform: capitalize;"><%= vehicleType %></span></div>
-                <div><strong>Vehicle Model:</strong> <span id="plate-model"><%= vehicleModel %></span></div>
-                <div><strong>Reg. Number:</strong> <span id="plate-number" style="text-transform: uppercase;"><%= vehicleNumber %></span></div>
-                <div><strong>Service Status:</strong> <span id="plate-status" class="badge" style="background:var(--primary); color:#white; padding: 2px 8px; border-radius: 4px;"><%= serviceStatus %></span></div>
-                <div><strong>Timeline Slot:</strong> <span id="plate-slot">Preferred Slot</span></div>
-            </div>
-            <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; text-align: center;">
-                <i class="fas fa-info-circle"></i> Tip: You can click the vehicle to Zoom-In, or click-and-drag across the garage to rotate views.
-            </p>
-        </div>
-
-        <!-- Live Demo Controls (shown if not logged in or doesn't have active booking) -->
-        <div class="demo-controls">
-            <div>
-                <span style="font-size: 13px; font-weight: 600; margin-right: 10px;">Select Model:</span>
-                <button class="demo-btn active" onclick="changeDemoVehicle('car', this)">Car</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('bike', this)">Bike</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('scooter', this)">Scooter</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('truck', this)">Truck</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('bus', this)">Bus</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('ev', this)">EV</button>
-            </div>
-            <div style="border-left: 1px solid var(--border-color); padding-left: 15px;">
-                <span style="font-size: 13px; font-weight: 600; margin-right: 10px;">Change Status:</span>
-                <button class="demo-btn" onclick="changeDemoStatus('BOOKED', this)">Booked</button>
-                <button class="demo-btn active" onclick="changeDemoStatus('RECEIVED', this)">Received</button>
-                <button class="demo-btn" onclick="changeDemoStatus('IN_PROGRESS', this)">In Service</button>
-                <button class="demo-btn" onclick="changeDemoStatus('READY', this)">Ready</button>
-                <button class="demo-btn" onclick="changeDemoStatus('DELIVERED', this)">Delivered</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Interactive Estimation Cost Widget -->
     <div class="glass-container pm-reveal" data-reveal="left">
@@ -306,46 +254,26 @@
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
     <script src="js/premium.js"></script>
+    <script src="js/premium3d.js"></script>
     <script>
-        // Load initial vehicle and status on page load
+        // Boot the holographic wireframe vehicle, seeded from the user's DB vehicle type
         window.addEventListener("DOMContentLoaded", () => {
-            const initialType = '<%= vehicleType %>';
-            const initialStatus = '<%= serviceStatus %>';
-            loadVehicleShowcase(initialType, initialStatus);
+            const initialType = '<%= vehicleType %>' || 'sedan';
+            if (window.PM3D) {
+                PM3D.mount("pm3d-hero-canvas", initialType);
+                // reflect DB type in the selector highlight
+                const norm = PM3D.normalizeType(initialType);
+                document.querySelectorAll(".pm3d-chip").forEach(function (b) {
+                    b.classList.toggle("active", b.dataset.type === norm);
+                });
+            }
         });
 
-        // Track demo state explicitly (status codes, not button labels)
-        let demoType = '<%= vehicleType %>' || 'car';
-        let demoStatus = '<%= serviceStatus %>' || 'RECEIVED';
-
-        const demoModelLabels = {
-            car: "Sedan Model S",
-            bike: "Sport Bike v2.0",
-            scooter: "Vespa S-125",
-            truck: "Flatbed Recovery Utility",
-            bus: "City Transit Coach",
-            ev: "Electric Model E"
-        };
-
-        function changeDemoVehicle(type, btn) {
-            btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            demoType = type;
-            document.getElementById("plate-type").innerText = type;
-            if (demoModelLabels[type]) {
-                document.getElementById("plate-model").innerText = demoModelLabels[type];
-            }
-            loadVehicleShowcase(demoType, demoStatus);
-        }
-
-        function changeDemoStatus(status, btn) {
-            btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            demoStatus = status;
-            document.getElementById("plate-status").innerText = status;
-            loadVehicleShowcase(demoType, demoStatus);
+        // Swap the displayed wireframe vehicle
+        function pm3dSelect(type, btn) {
+            document.querySelectorAll(".pm3d-chip").forEach(b => b.classList.remove("active"));
+            if (btn) btn.classList.add("active");
+            if (window.PM3D) PM3D.select(type);
         }
 
         function estimateCost() {

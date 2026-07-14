@@ -1,0 +1,326 @@
+/* =====================================================================
+   premium3d.css — Matte-black futuristic automotive theme
+   Monochrome: black / white / grey + frosted glass. Loaded AFTER
+   premium.css to override the previous cinematic (colorful) hero.
+   Scoped to `.pm3d-home` so other pages are untouched.
+   ===================================================================== */
+
+.pm3d-home {
+    --g-line: rgba(255, 255, 255, 0.14);
+    --g-bg: rgba(255, 255, 255, 0.03);
+    --g-text: #eef1f6;
+    --g-muted: #9aa3b2;
+    background: #000 !important;
+    color: var(--g-text);
+}
+
+.pm3d-home,
+.pm3d-home .glass-container,
+.pm3d-home section {
+    background-color: #000;
+}
+
+/* smooth scrolling for the whole experience */
+html { scroll-behavior: smooth; }
+
+/* ---- monochrome loading screen ---- */
+.pm3d-home #pm-loader { background: #000 !important; }
+.pm3d-home .pm-loader-wheel {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    border-top-color: #fff !important;
+    border-right-color: rgba(255, 255, 255, 0.55) !important;
+}
+.pm3d-home .pm-loader-wheel::after { background: #000 !important; }
+.pm3d-home .pm-loader-brand {
+    background: none !important;
+    -webkit-text-fill-color: #fff !important;
+    color: #fff !important;
+    font-weight: 300;
+}
+.pm3d-home .pm-loader-bar { background: rgba(255, 255, 255, 0.12) !important; }
+.pm3d-home .pm-loader-bar span {
+    background: #fff !important;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6) !important;
+}
+.pm3d-home .pm-loader-logo { filter: grayscale(1) brightness(1.4); }
+
+/* ---- dark glass header ---- */
+.pm3d-home header {
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--g-line);
+}
+.pm3d-home header h1,
+.pm3d-home header nav a { color: #fff; }
+.pm3d-home header nav a.active { color: #fff; border-bottom: 1px solid #fff; }
+
+/* =====================================================================
+   HERO — full-screen 3D stage
+   ===================================================================== */
+.pm3d-home .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 640px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: block;
+    background:
+        radial-gradient(ellipse at 50% 40%, #0b0d12 0%, #030304 60%, #000 100%);
+    overflow: hidden;
+}
+
+/* faint technical blueprint grid behind the model */
+.pm3d-blueprint {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+        linear-gradient(var(--g-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--g-line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    opacity: 0.35;
+    animation: pm3d-grid-pan 24s linear infinite;
+}
+@keyframes pm3d-grid-pan {
+    from { background-position: 0 0, 0 0; }
+    to   { background-position: 64px 64px, 64px 64px; }
+}
+
+/* soft fog blooms */
+.pm3d-fog {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(600px 300px at 50% 78%, rgba(255,255,255,0.06), transparent 70%),
+        radial-gradient(500px 260px at 70% 20%, rgba(180,200,255,0.04), transparent 70%);
+}
+
+#pm3d-hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+    cursor: grab;
+}
+
+/* content overlay */
+.pm3d-home .hero .hero-content {
+    position: absolute;
+    left: 6%;
+    bottom: 12%;
+    z-index: 3;
+    max-width: 520px;
+    padding: 30px 34px;
+    background: var(--g-bg);
+    border: 1px solid var(--g-line);
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.pm3d-home .hero-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--g-muted);
+    font-weight: 500;
+    margin-bottom: 14px;
+}
+.pm3d-home .hero-content h2 {
+    font-size: clamp(28px, 4vw, 46px);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: 0.5px;
+    color: #fff;
+    margin: 0 0 14px;
+}
+.pm3d-home .hero-content h2 .accent { font-weight: 600; }
+.pm3d-home .hero-content p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--g-muted);
+    margin: 0 0 22px;
+}
+
+/* monochrome CTA */
+.pm3d-home .hero-content .btn-ripple {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.pm3d-home .hero-content .btn-ripple:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.18);
+}
+
+/* vehicle selector rail */
+.pm3d-selector {
+    position: absolute;
+    right: 6%;
+    bottom: 12%;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: var(--g-bg);
+    border: 1px solid var(--g-line);
+    border-radius: 16px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    min-width: 150px;
+}
+.pm3d-selector .sel-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--g-muted);
+    margin-bottom: 4px;
+}
+.pm3d-chip {
+    background: transparent;
+    color: var(--g-text);
+    border: 1px solid var(--g-line);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pm3d-chip i { width: 16px; text-align: center; opacity: 0.7; }
+.pm3d-chip:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+.pm3d-chip.active { background: #fff; color: #000; border-color: #fff; }
+.pm3d-chip.active i { opacity: 1; }
+
+/* scroll cue in white */
+.pm3d-home .pm-scroll-cue { z-index: 3; color: var(--g-muted); }
+.pm3d-home .pm-scroll-cue .mouse { border-color: var(--g-muted); }
+.pm3d-home .pm-scroll-cue .mouse::before { background: #fff; }
+
+/* =====================================================================
+   Generic glass sections below the hero
+   ===================================================================== */
+.pm3d-home .glass-container {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--g-line);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+.pm3d-home .glass-container h3,
+.pm3d-home .glass-container h4 { color: #fff; font-weight: 400; }
+.pm3d-home .card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--g-line);
+    color: var(--g-text);
+}
+.pm3d-home .text-primary { color: #fff !important; }
+
+/* =====================================================================
+   DASHBOARD — floating vehicle with orbiting glass panels
+   ===================================================================== */
+.pm3d-dash-stage {
+    position: relative;
+    width: 100%;
+    height: 74vh;
+    min-height: 560px;
+    margin-bottom: 30px;
+    border-radius: 22px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 45%, #0b0d12 0%, #030304 65%, #000 100%);
+    border: 1px solid var(--g-line);
+}
+#pm3d-dash-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+.pm3d-dash-stage .pm3d-blueprint { z-index: 0; }
+
+.pm3d-panel {
+    position: absolute;
+    z-index: 3;
+    width: 210px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--g-line);
+    border-radius: 14px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.pm3d-panel .p-icon { font-size: 15px; opacity: 0.7; margin-bottom: 8px; color: #fff; }
+.pm3d-panel .p-label {
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--g-muted); font-weight: 500;
+}
+.pm3d-panel .p-value { font-size: 18px; font-weight: 300; color: #fff; margin-top: 4px; }
+.pm3d-panel .p-sub { font-size: 11px; color: var(--g-muted); margin-top: 4px; font-weight: 300; }
+.pm3d-panel .p-value.ok { color: #d6ffe0; }
+.pm3d-panel .p-value.warn { color: #ffe6c2; }
+.pm3d-panel .p-value.bad { color: #ffd0d0; }
+
+/* corner placement (desktop) */
+.pm3d-panel.pos-tl { top: 6%; left: 4%; }
+.pm3d-panel.pos-tr { top: 6%; right: 4%; }
+.pm3d-panel.pos-ml { top: 40%; left: 2%; }
+.pm3d-panel.pos-mr { top: 40%; right: 2%; }
+.pm3d-panel.pos-bl { bottom: 8%; left: 4%; }
+.pm3d-panel.pos-br { bottom: 8%; right: 4%; }
+
+.pm3d-dash-title {
+    position: absolute; z-index: 3; top: 6%; left: 50%; transform: translateX(-50%);
+    text-align: center; width: 90%;
+}
+.pm3d-dash-title h2 { font-weight: 300; color: #fff; font-size: clamp(22px, 3vw, 34px); margin: 0; letter-spacing: 0.5px; }
+.pm3d-dash-title p { color: var(--g-muted); font-size: 13px; font-weight: 300; margin-top: 6px; }
+
+/* =====================================================================
+   Responsive
+   ===================================================================== */
+@media (max-width: 900px) {
+    .pm3d-home .hero { height: auto; min-height: 0; }
+    #pm3d-hero-canvas { position: relative; height: 62vh; }
+    .pm3d-home .hero .hero-content {
+        position: relative; left: auto; bottom: auto; max-width: none;
+        margin: -40px 16px 16px; z-index: 3;
+    }
+    .pm3d-selector {
+        position: relative; right: auto; bottom: auto; margin: 0 16px 24px;
+        flex-direction: row; flex-wrap: wrap; min-width: 0;
+    }
+    .pm3d-chip { flex: 1 1 30%; justify-content: center; }
+
+    .pm3d-dash-stage { height: auto; min-height: 0; }
+    #pm3d-dash-canvas { position: relative; height: 48vh; }
+    .pm3d-dash-title { position: relative; transform: none; left: auto; top: auto; margin: 16px 0; }
+    .pm3d-panel {
+        position: relative; width: auto; inset: auto !important;
+        margin: 10px; display: inline-block; min-width: 45%;
+    }
+    .pm3d-dash-stage .pm3d-panels-wrap { display: flex; flex-wrap: wrap; padding: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pm3d-blueprint { animation: none; }
+    html { scroll-behavior: auto; }
+}

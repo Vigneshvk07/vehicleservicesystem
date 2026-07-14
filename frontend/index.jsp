@@ -55,6 +55,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <!-- Three.js for the holographic wireframe vehicle -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GLTFLoader for optional photoreal .glb/.gltf vehicle models -->
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
         .vibrate-idle {
             animation: vibrate 0.15s linear infinite;
@@ -150,6 +152,8 @@
 
     <!-- Full-Screen 3D Holographic Wireframe Hero -->
     <section class="hero">
+        <!-- Provided owner/vehicle photo as a cinematic hero backdrop -->
+        <div class="pm3d-hero-photo" style="background-image:url('images/bikehome.jpg');"></div>
         <div class="pm3d-blueprint"></div>
         <div class="pm3d-fog"></div>
         <!-- Three.js CAD/X-ray vehicle renders here -->
@@ -257,6 +261,17 @@
     <script src="js/premium3d.js"></script>
     <script>
         // Boot the holographic wireframe vehicle, seeded from the user's DB vehicle type
+        // Photoreal models: drop .glb files at images/models/<type>.glb and they
+        // auto-load in place of the procedural wireframe (falls back if absent).
+        window.PM3D_MODELS = {
+            sedan:     "images/models/sedan.glb",
+            suv:       "images/models/suv.glb",
+            hatchback: "images/models/hatchback.glb",
+            bike:      "images/models/bike.glb",
+            truck:     "images/models/truck.glb",
+            ev:        "images/models/ev.glb"
+        };
+
         window.addEventListener("DOMContentLoaded", () => {
             const initialType = '<%= vehicleType %>' || 'sedan';
             if (window.PM3D) {

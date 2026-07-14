@@ -267,6 +267,8 @@
 
     Viewer.prototype._buildVehicle = function (type) {
         this._disposeVehicle();
+        this._disposeGLTF();
+        this._gltfToken = (this._gltfToken || 0) + 1; // invalidate any in-flight load
 
         var store = { group: new THREE.Group(), parts: [], wheels: [], headlights: [], breathe: 1 };
         (BUILDERS[type] || BUILDERS.sedan)(store);
@@ -286,6 +288,68 @@
         this.reflection = rstore;
 
         this._drawOn(store);
+
+        // If a photoreal GLTF/GLB model is registered for this type, load it and
+        // replace the procedural wireframe. Falls back silently to the wireframe.
+        this._loadGLTF(type);
+    };
+
+    /* Optional photoreal model. Register URLs via window.PM3D_MODELS = { sedan:"..", bike:".." }.
+       Uses THREE.GLTFLoader if present. On success, swaps out the procedural wireframe. */
+    Viewer.prototype._loadGLTF = function (type) {
+        var url = window.PM3D_MODELS && (window.PM3D_MODELS[type] || window.PM3D_MODELS[normalizeType(type)]);
+        if (!url || typeof THREE.GLTFLoader === "undefined") return;
+
+        var self = this;
+        var token = this._gltfToken;
+        new THREE.GLTFLoader().load(url, function (gltf) {
+            if (token !== self._gltfToken) return; // a newer selection superseded this
+            self._disposeGLTF();
+            self._disposeVehicle();
+
+            var model = gltf.scene;
+            // center on origin and rest on the floor, scale to ~4.2 units long
+            var box = new THREE.Box3().setFromObject(model);
+            var size = new THREE.Vector3(); box.getSize(size);
+            var center = new THREE.Vector3(); box.getCenter(center);
+            var scale = 4.2 / (Math.max(size.x, size.z) || 1);
+            model.scale.setScalar(scale);
+            model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+
+            var wrap = new THREE.Group();
+            wrap.add(model);
+            self.scene.add(wrap);
+            self.gltf = { group: wrap };
+
+            // reflected copy on the glossy floor
+            var refl = model.clone(true);
+            var rwrap = new THREE.Group();
+            rwrap.add(refl);
+            rwrap.scale.y = -1;
+            rwrap.traverse(function (o) {
+                if (o.isMesh && o.material) {
+                    o.material = o.material.clone();
+                    o.material.transparent = true;
+                    o.material.opacity = 0.18;
+                    o.material.depthWrite = false;
+                }
+            });
+            self.scene.add(rwrap);
+            self.gltfReflection = { group: rwrap };
+
+            if (typeof gsap !== "undefined" && !prefersReduced) {
+                wrap.scale.set(0.92, 0.92, 0.92);
+                gsap.to(wrap.scale, { x: 1, y: 1, z: 1, duration: 1.0, ease: "power2.out" });
+            }
+        }, undefined, function () { /* keep procedural fallback on error */ });
+    };
+
+    Viewer.prototype._disposeGLTF = function () {
+        var self = this;
+        [this.gltf, this.gltfReflection].forEach(function (s) {
+            if (s && s.group) self.scene.remove(s.group);
+        });
+        this.gltf = null; this.gltfReflection = null;
     };
 
     /* Self-drawing blueprint reveal: fade parts in, front (+X) to back. */
@@ -414,6 +478,21 @@
                 this.reflection.group.rotation.y = this.vehicle.group.rotation.y;
                 this.reflection.group.rotation.x = -this.vehicle.group.rotation.x;
                 this.reflection.group.position.y = -floatY;
+            }
+        }
+
+        // photoreal GLTF model shares the same slow-rotate / float / mouse behaviour
+        if (this.gltf) {
+            this._gltfSpin = (this._gltfSpin || 0) + dt * 0.25 * speed;
+            this.gltf.group.rotation.y = this._gltfSpin + this.mouse.x * 0.35;
+            var gtx = this.mouse.y * 0.1 + this.scrollTilt * 0.12;
+            this.gltf.group.rotation.x += (gtx - this.gltf.group.rotation.x) * 0.06;
+            var gfloat = Math.sin(t * 0.9) * 0.08 * speed;
+            this.gltf.group.position.y = gfloat;
+            if (this.gltfReflection) {
+                this.gltfReflection.group.rotation.y = this.gltf.group.rotation.y;
+                this.gltfReflection.group.rotation.x = -this.gltf.group.rotation.x;
+                this.gltfReflection.group.position.y = -gfloat;
             }
         }
 

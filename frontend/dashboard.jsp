@@ -124,6 +124,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body class="premium-home pm3d-home">
 
@@ -499,6 +500,14 @@
     <script src="js/premium.js"></script>
     <script src="js/premium3d.js"></script>
     <script>
+        window.PM3D_MODELS = {
+            sedan:     "images/models/sedan.glb",
+            suv:       "images/models/suv.glb",
+            hatchback: "images/models/hatchback.glb",
+            bike:      "images/models/bike.glb",
+            truck:     "images/models/truck.glb",
+            ev:        "images/models/ev.glb"
+        };
         document.addEventListener("DOMContentLoaded", () => {
             if (window.PM3D) PM3D.mount("pm3d-dash-canvas", '<%= dashVehicleType %>' || 'sedan');
             <% if (request.getParameter("error") != null) { %>

@@ -71,6 +71,26 @@ html { scroll-behavior: smooth; }
     overflow: hidden;
 }
 
+/* provided owner/vehicle photo backdrop — desaturated to stay monochrome, darkened for legibility */
+.pm3d-hero-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center 30%;
+    background-repeat: no-repeat;
+    filter: grayscale(0.85) contrast(1.05) brightness(0.55);
+    opacity: 0.5;
+}
+.pm3d-hero-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.15) 100%),
+        linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.75) 100%);
+}
+
 /* faint technical blueprint grid behind the model */
 .pm3d-blueprint {
     position: absolute;

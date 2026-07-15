@@ -44,8 +44,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <!-- Premium animated homepage theme -->
+    <link rel="stylesheet" href="css/premium.css">
+    <!-- Matte-black futuristic 3D theme (overrides the cinematic hero) -->
+    <link rel="stylesheet" href="css/premium3d.css">
     <!-- ChartJS for dashboard statistics integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- GSAP + ScrollTrigger for high-performance scroll animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <style>
         .vibrate-idle {
             animation: vibrate 0.15s linear infinite;
@@ -100,7 +107,16 @@
         }
     </style>
 </head>
-<body>
+<body class="premium-home pm3d-home">
+
+    <!-- Premium Loading Screen -->
+    <div id="pm-loader">
+        <img src="images/logo.png" alt="Logo" class="pm-loader-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3202/3202926.png'">
+        <div class="pm-loader-wheel"></div>
+        <div class="pm-loader-brand">Vehicle Care</div>
+        <div class="pm-loader-bar"><span></span></div>
+        <div class="pm-loader-pct">0%</div>
+    </div>
 
     <!-- Sticky Header Navbar -->
     <header>
@@ -130,75 +146,36 @@
         </nav>
     </header>
 
-    <!-- Hero Showcase Section -->
-    <section class="hero">
-        <h2>Premium Vehicle Maintenance Services</h2>
-        <p>Book vehicle inspections online, upload documents, track real-time workshop repair timelines, and download certified GST invoices.</p>
-        <% if (user == null) { %>
-            <a href="register.jsp" class="btn-ripple"><i class="fas fa-user-plus"></i> Join Us Now</a>
-        <% } else { %>
-            <a href="bookservice.jsp" class="btn-ripple"><i class="fas fa-calendar-check"></i> Book a Service Appointment</a>
-        <% } %>
+    <!-- Full-Screen Cinematic Photo Hero (provided image) -->
+    <section class="hero pm3d-photo-hero">
+        <div class="pm3d-hero-photo" style="background-image:url('images/bikehome.jpg');"></div>
+        <div class="pm3d-fog"></div>
+
+        <div class="hero-content">
+            <span class="hero-eyebrow">Premium Vehicle Care</span>
+            <% if (user != null) { %>
+                <h2>Welcome back,<br><span class="accent"><%= ownerName %></span></h2>
+                <% if (hasActiveBooking) { %>
+                    <p>Your <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>) is in the bay — current status <strong><%= serviceStatus.replace("_", " ") %></strong>.</p>
+                <% } else { %>
+                    <p>Your <strong><%= vehicleModel %></strong> is ready for its next premium service. View its 3D model in My Vehicles.</p>
+                <% } %>
+                <a href="bookservice.jsp" class="btn-ripple"><i class="fas fa-calendar-check"></i> Book a Service Appointment</a>
+            <% } else { %>
+                <h2>Engineering<br><span class="accent">Precision Care</span></h2>
+                <p>A luxury automotive service experience. Book inspections, track repairs, and download certified GST invoices.</p>
+                <a href="register.jsp" class="btn-ripple"><i class="fas fa-user-plus"></i> Join Us Now</a>
+            <% } %>
+        </div>
+
+        <div class="pm-scroll-cue">
+            <div class="mouse"></div>
+            Scroll to explore
+        </div>
     </section>
 
-    <!-- Realistic Animated Garage Arena -->
-    <div class="glass-container">
-        <h3 class="section-title" style="text-align: center; margin-bottom: 10px;">
-            <i class="fas fa-warehouse text-primary"></i> VSS Live Garage Tracker
-        </h3>
-        <p style="text-align: center; margin-bottom: 25px; color: var(--text-muted);">
-            <% if (user != null && hasActiveBooking) { %>
-                Displaying real-time updates for <strong><%= ownerName %></strong>'s registered <strong><%= vehicleModel %></strong> (<%= vehicleNumber %>).
-            <% } else { %>
-                Interact with the simulation panel below to preview our mechanical service steps!
-            <% } %>
-        </p>
-
-        <!-- Simulated Garage Box -->
-        <div class="garage-canvas-container" id="garage-container">
-            <div class="service-bay"></div>
-            <div class="hydraulic-lift"></div>
-            <!-- Dynamic Vector Vehicle -->
-            <div class="vehicle-avatar" id="vehicle-avatar"></div>
-        </div>
-
-        <!-- Personalization Plate Info -->
-        <div class="card" style="max-width: 600px; margin: 0 auto 25px auto;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-                <div><strong>Owner Name:</strong> <span id="plate-owner"><%= ownerName %></span></div>
-                <div><strong>Vehicle Class:</strong> <span id="plate-type" style="text-transform: capitalize;"><%= vehicleType %></span></div>
-                <div><strong>Vehicle Model:</strong> <span id="plate-model"><%= vehicleModel %></span></div>
-                <div><strong>Reg. Number:</strong> <span id="plate-number" style="text-transform: uppercase;"><%= vehicleNumber %></span></div>
-                <div><strong>Service Status:</strong> <span id="plate-status" class="badge" style="background:var(--primary); color:#white; padding: 2px 8px; border-radius: 4px;"><%= serviceStatus %></span></div>
-                <div><strong>Timeline Slot:</strong> <span id="plate-slot">Preferred Slot</span></div>
-            </div>
-            <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; text-align: center;">
-                <i class="fas fa-info-circle"></i> Tip: You can click the vehicle to Zoom-In, or click-and-drag across the garage to rotate views.
-            </p>
-        </div>
-
-        <!-- Live Demo Controls (shown if not logged in or doesn't have active booking) -->
-        <div class="demo-controls">
-            <div>
-                <span style="font-size: 13px; font-weight: 600; margin-right: 10px;">Select Model:</span>
-                <button class="demo-btn active" onclick="changeDemoVehicle('car', this)">Car</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('bike', this)">Bike</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('scooter', this)">Scooter</button>
-                <button class="demo-btn" onclick="changeDemoVehicle('truck', this)">Truck</button>
-            </div>
-            <div style="border-left: 1px solid var(--border-color); padding-left: 15px;">
-                <span style="font-size: 13px; font-weight: 600; margin-right: 10px;">Change Status:</span>
-                <button class="demo-btn" onclick="changeDemoStatus('BOOKED', this)">Booked</button>
-                <button class="demo-btn active" onclick="changeDemoStatus('RECEIVED', this)">Received</button>
-                <button class="demo-btn" onclick="changeDemoStatus('IN_PROGRESS', this)">In Service</button>
-                <button class="demo-btn" onclick="changeDemoStatus('READY', this)">Ready</button>
-                <button class="demo-btn" onclick="changeDemoStatus('DELIVERED', this)">Delivered</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Interactive Estimation Cost Widget -->
-    <div class="glass-container">
+    <div class="glass-container pm-reveal" data-reveal="left">
         <h3><i class="fas fa-calculator text-primary"></i> Service Cost Estimator</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
             <div>
@@ -232,7 +209,7 @@
     </div>
 
     <!-- Quick Features Overview -->
-    <div class="glass-container">
+    <div class="glass-container pm-reveal" data-reveal="right">
         <h3><i class="fas fa-star text-primary"></i> Our Features</h3>
         <div class="dashboard-grid" style="margin-top:20px;">
             <div class="card">
@@ -261,44 +238,8 @@
     <!-- Script triggers -->
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/premium.js"></script>
     <script>
-        // Load initial vehicle and status on page load
-        window.addEventListener("DOMContentLoaded", () => {
-            const initialType = '<%= vehicleType %>';
-            const initialStatus = '<%= serviceStatus %>';
-            loadVehicleShowcase(initialType, initialStatus);
-        });
-
-        function changeDemoVehicle(type, btn) {
-            // Toggle active class
-            btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            // Set dynamic metadata labels
-            document.getElementById("plate-type").innerText = type;
-            if (type === 'bike') document.getElementById("plate-model").innerText = "Sport Bike v2.0";
-            if (type === 'scooter') document.getElementById("plate-model").innerText = "Vespa S-125";
-            if (type === 'truck') document.getElementById("plate-model").innerText = "Flatbed Recovery Utility";
-            if (type === 'car') document.getElementById("plate-model").innerText = "Sedan Model S";
-            
-            const activeStatusBtn = document.querySelector('.demo-controls button[onclick*="changeDemoStatus"].active') || {innerText: 'RECEIVED'};
-            const currentStatus = activeStatusBtn.innerText || 'RECEIVED';
-            
-            loadVehicleShowcase(type, currentStatus);
-        }
-
-        function changeDemoStatus(status, btn) {
-            btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            document.getElementById("plate-status").innerText = status;
-            
-            const activeTypeBtn = document.querySelector('.demo-controls button[onclick*="changeDemoVehicle"].active') || {innerText: 'car'};
-            const currentType = activeTypeBtn.innerText.toLowerCase() || 'car';
-            
-            loadVehicleShowcase(currentType, status);
-        }
-
         function estimateCost() {
             const selectEl = document.getElementById("cost-estimator");
             let baseCost = parseFloat(selectEl.options[selectEl.selectedIndex].dataset.cost);

@@ -10,6 +10,7 @@ public class User {
     private String passwordHash;
     private String role; // 'CUSTOMER', 'ADMIN', 'EMPLOYEE'
     private String profilePic;
+    private int loyaltyPoints;
     private Timestamp createdAt;
 
     public User() {}
@@ -79,6 +80,14 @@ public class User {
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
+    }
+
+    public int getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+
+    public void setLoyaltyPoints(int loyaltyPoints) {
+        this.loyaltyPoints = loyaltyPoints;
     }
 
     public Timestamp getCreatedAt() {

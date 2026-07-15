@@ -15,6 +15,9 @@
     VehicleDAO vehicleDAO = new VehicleDAO();
     DocumentDAO documentDAO = new DocumentDAO();
     List<Vehicle> vehicles = vehicleDAO.getVehiclesByCustomer(user.getId());
+    String firstVehType = vehicles.isEmpty() ? "sedan" : vehicles.get(0).getType();
+    String firstVehName = vehicles.isEmpty() ? "your vehicle"
+        : (vehicles.get(0).getBrand() + " " + vehicles.get(0).getModel());
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,6 +28,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/premium3d.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
@@ -44,6 +51,30 @@
             <button class="theme-toggle-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
         </nav>
     </header>
+
+    <!-- 3D Vehicle Visualization Stage -->
+    <div style="max-width:1200px; margin:24px auto 0; padding:0 20px;">
+        <div class="pm3d-dash-stage pm3d-veh-stage">
+            <div class="pm3d-blueprint"></div>
+            <div class="pm3d-fog"></div>
+            <canvas id="pm3d-veh-canvas"></canvas>
+
+            <div class="pm3d-dash-title">
+                <h2>3D Model &mdash; <%= firstVehName %></h2>
+                <p>Interactive preview of your registered vehicle. Drag your mouse to orbit; hover to highlight.</p>
+            </div>
+
+            <div class="pm3d-selector pm3d-veh-selector">
+                <span class="sel-label">View</span>
+                <button class="pm3d-chip" data-type="sedan" onclick="pm3dSelect('sedan', this)"><i class="fas fa-car-side"></i> Sedan</button>
+                <button class="pm3d-chip" data-type="suv" onclick="pm3dSelect('suv', this)"><i class="fas fa-car"></i> SUV</button>
+                <button class="pm3d-chip" data-type="hatchback" onclick="pm3dSelect('hatchback', this)"><i class="fas fa-car-side"></i> Hatchback</button>
+                <button class="pm3d-chip" data-type="bike" onclick="pm3dSelect('bike', this)"><i class="fas fa-motorcycle"></i> Bike</button>
+                <button class="pm3d-chip" data-type="truck" onclick="pm3dSelect('truck', this)"><i class="fas fa-truck"></i> Truck</button>
+                <button class="pm3d-chip" data-type="ev" onclick="pm3dSelect('ev', this)"><i class="fas fa-charging-station"></i> EV</button>
+            </div>
+        </div>
+    </div>
 
     <div class="glass-container">
         <h2 style="margin-bottom: 25px;"><i class="fas fa-motorcycle text-primary"></i> Registered Vehicles Directory</h2>
@@ -208,7 +239,33 @@
 
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/premium3d.js"></script>
     <script>
+        // Photoreal CC0 GLB models (Kenney Car Kit) with wireframe fallback
+        window.PM3D_MODELS = {
+            sedan:     "images/models/sedan.glb",
+            suv:       "images/models/suv.glb",
+            hatchback: "images/models/hatchback.glb",
+            bike:      "images/models/bike.glb",
+            truck:     "images/models/truck.glb",
+            ev:        "images/models/ev.glb"
+        };
+        document.addEventListener("DOMContentLoaded", () => {
+            const firstType = '<%= firstVehType %>' || 'sedan';
+            if (window.PM3D) {
+                PM3D.mount("pm3d-veh-canvas", firstType);
+                const norm = PM3D.normalizeType(firstType);
+                document.querySelectorAll(".pm3d-veh-selector .pm3d-chip").forEach(function (b) {
+                    b.classList.toggle("active", b.dataset.type === norm);
+                });
+            }
+        });
+        function pm3dSelect(type, btn) {
+            document.querySelectorAll(".pm3d-veh-selector .pm3d-chip").forEach(b => b.classList.remove("active"));
+            if (btn) btn.classList.add("active");
+            if (window.PM3D) PM3D.select(type);
+        }
+
         function openUploadModal(vehicleId) {
             document.getElementById("upload-vehicle-id").value = vehicleId;
             document.getElementById("upload-doc-modal").style.display = "block";

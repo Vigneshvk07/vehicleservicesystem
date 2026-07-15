@@ -64,6 +64,51 @@
     }
 
     List<String> activities = bookingDAO.getRecentActivities();
+
+    // ---- 3D dashboard: vehicle type + document / service status panels ----
+    String dashVehicleType = vehicles.isEmpty() ? "sedan" : vehicles.get(0).getType();
+
+    java.util.List<Document> allDocs = new java.util.ArrayList<Document>(userDocs);
+    for (Vehicle v : vehicles) {
+        allDocs.addAll(documentDAO.getDocumentsByVehicle(v.getId()));
+    }
+    java.text.SimpleDateFormat pf = new java.text.SimpleDateFormat("dd MMM yyyy");
+    java.util.Date nowD = new java.util.Date();
+
+    java.util.Map<String,String> docVal = new java.util.HashMap<String,String>();
+    java.util.Map<String,String> docCls = new java.util.HashMap<String,String>();
+    java.util.Map<String,String> docSub = new java.util.HashMap<String,String>();
+    for (String dt : new String[]{"RC", "INSURANCE", "PUC"}) {
+        Document found = null;
+        for (Document d : allDocs) { if (dt.equalsIgnoreCase(d.getDocumentType())) { found = d; break; } }
+        if (found == null) {
+            docVal.put(dt, "Missing"); docCls.put(dt, "warn"); docSub.put(dt, "Not uploaded");
+        } else if (found.getExpiryDate() != null && found.getExpiryDate().before(nowD)) {
+            docVal.put(dt, "Expired"); docCls.put(dt, "bad"); docSub.put(dt, "on " + pf.format(found.getExpiryDate()));
+        } else {
+            docVal.put(dt, "Valid"); docCls.put(dt, "ok");
+            docSub.put(dt, found.getExpiryDate() != null ? "valid till " + pf.format(found.getExpiryDate()) : "on file");
+        }
+    }
+
+    String lastServiceVal = "\u2014", lastServiceSub = "No history";
+    Booking lastDone = null;
+    for (Booking b : bookings) {
+        if ("DELIVERED".equalsIgnoreCase(b.getStatus()) || "COMPLETED".equalsIgnoreCase(b.getStatus())) { lastDone = b; break; }
+    }
+    if (lastDone != null && lastDone.getBookingDate() != null) {
+        lastServiceVal = pf.format(lastDone.getBookingDate());
+        lastServiceSub = lastDone.getVehicleModel() != null ? lastDone.getVehicleModel() : "Completed";
+    }
+
+    String upcomingVal = "None", upcomingSub = "Book a service";
+    String serviceDueVal = "Up to date", serviceDueCls = "ok", serviceDueSub = "No pending service";
+    if (activeBooking != null) {
+        upcomingVal = activeBooking.getBookingDate() != null ? pf.format(activeBooking.getBookingDate()) : "Scheduled";
+        upcomingSub = (activeBooking.getPreferredTime() != null ? activeBooking.getPreferredTime() + " \u00b7 " : "") + activeBooking.getStatus().replace("_", " ");
+        serviceDueVal = activeBooking.getStatus().replace("_", " ");
+        serviceDueCls = "warn"; serviceDueSub = "Service in progress";
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,8 +119,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/premium.css">
+    <link rel="stylesheet" href="css/premium3d.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
-<body>
+<body class="premium-home pm3d-home">
+
+    <!-- Premium Loading Screen -->
+    <div id="pm-loader">
+        <img src="images/logo.png" alt="Logo" class="pm-loader-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3202/3202926.png'">
+        <div class="pm-loader-wheel"></div>
+        <div class="pm-loader-brand">Vehicle Care</div>
+        <div class="pm-loader-bar"><span></span></div>
+        <div class="pm-loader-pct">0%</div>
+    </div>
 
     <!-- Sticky Header -->
     <header>
@@ -93,6 +153,56 @@
             <button class="theme-toggle-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
         </nav>
     </header>
+
+    <!-- Floating 3D vehicle blueprint with orbiting glass info panels -->
+    <div class="pm3d-dash-stage">
+        <div class="pm3d-blueprint"></div>
+        <div class="pm3d-fog"></div>
+        <canvas id="pm3d-dash-canvas"></canvas>
+
+        <div class="pm3d-dash-title">
+            <h2>Your Digital Garage</h2>
+            <p><%= vehicles.isEmpty() ? "Register a vehicle to generate its live blueprint" : "Live wireframe of your registered " + dashVehicleType %></p>
+        </div>
+
+        <div class="pm3d-panel pos-tl pm-reveal" data-reveal="left">
+            <div class="p-icon"><i class="fas fa-id-card"></i></div>
+            <div class="p-label">RC Status</div>
+            <div class="p-value <%= docCls.get("RC") %>"><%= docVal.get("RC") %></div>
+            <div class="p-sub"><%= docSub.get("RC") %></div>
+        </div>
+        <div class="pm3d-panel pos-ml pm-reveal" data-reveal="left">
+            <div class="p-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="p-label">Insurance</div>
+            <div class="p-value <%= docCls.get("INSURANCE") %>"><%= docVal.get("INSURANCE") %></div>
+            <div class="p-sub"><%= docSub.get("INSURANCE") %></div>
+        </div>
+        <div class="pm3d-panel pos-bl pm-reveal" data-reveal="left">
+            <div class="p-icon"><i class="fas fa-leaf"></i></div>
+            <div class="p-label">PUC Status</div>
+            <div class="p-value <%= docCls.get("PUC") %>"><%= docVal.get("PUC") %></div>
+            <div class="p-sub"><%= docSub.get("PUC") %></div>
+        </div>
+
+        <div class="pm3d-panel pos-tr pm-reveal" data-reveal="right">
+            <div class="p-icon"><i class="fas fa-wrench"></i></div>
+            <div class="p-label">Service Due</div>
+            <div class="p-value <%= serviceDueCls %>"><%= serviceDueVal %></div>
+            <div class="p-sub"><%= serviceDueSub %></div>
+        </div>
+        <div class="pm3d-panel pos-mr pm-reveal" data-reveal="right">
+            <div class="p-icon"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="p-label">Last Service</div>
+            <div class="p-value"><%= lastServiceVal %></div>
+            <div class="p-sub"><%= lastServiceSub %></div>
+        </div>
+        <div class="pm3d-panel pos-br pm-reveal" data-reveal="right">
+            <div class="p-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="p-label">Upcoming Booking</div>
+            <div class="p-value"><%= upcomingVal %></div>
+            <div class="p-sub"><%= upcomingSub %></div>
+        </div>
+    </div>
 
     <div class="glass-container">
         <!-- Dashboard Header Summary -->
@@ -116,7 +226,7 @@
 
         <!-- 4 Count Counters -->
         <div class="dashboard-grid">
-            <div class="card">
+            <div class="card pm-reveal" data-reveal="up">
                 <div class="card-header-vss">
                     <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Loyalty Points Balance</span>
                     <div class="card-icon"><i class="fas fa-trophy" style="color:var(--secondary);"></i></div>
@@ -124,7 +234,7 @@
                 <div class="card-value"><%= user.getLoyaltyPoints() %> pts</div>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">Earn 10% points on online invoice checkouts.</div>
             </div>
-            <div class="card">
+            <div class="card pm-reveal" data-reveal="up">
                 <div class="card-header-vss">
                     <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Registered Vehicles</span>
                     <div class="card-icon"><i class="fas fa-car" style="color:var(--primary);"></i></div>
@@ -132,7 +242,7 @@
                 <div class="card-value"><%= vehicleCount %> Vehicles</div>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:8px;"><a href="myvehicles.jsp" style="color:var(--primary); text-decoration:none; font-weight:600;">Manage Garage <i class="fas fa-chevron-right"></i></a></div>
             </div>
-            <div class="card">
+            <div class="card pm-reveal" data-reveal="up">
                 <div class="card-header-vss">
                     <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Pending Payments</span>
                     <div class="card-icon"><i class="fas fa-wallet" style="color:var(--danger);"></i></div>
@@ -387,8 +497,19 @@
 
     <script src="js/notifications.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/premium.js"></script>
+    <script src="js/premium3d.js"></script>
     <script>
+        window.PM3D_MODELS = {
+            sedan:     "images/models/sedan.glb",
+            suv:       "images/models/suv.glb",
+            hatchback: "images/models/hatchback.glb",
+            bike:      "images/models/bike.glb",
+            truck:     "images/models/truck.glb",
+            ev:        "images/models/ev.glb"
+        };
         document.addEventListener("DOMContentLoaded", () => {
+            if (window.PM3D) PM3D.mount("pm3d-dash-canvas", '<%= dashVehicleType %>' || 'sedan');
             <% if (request.getParameter("error") != null) { %>
                 window.Toast.show("<%= request.getParameter("error") %>", "error");
             <% } %>

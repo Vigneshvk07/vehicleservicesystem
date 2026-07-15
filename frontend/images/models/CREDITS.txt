@@ -1,0 +1,24 @@
+3D Vehicle Models
+=================
+
+The .glb vehicle models in this folder are free, permissively-licensed assets.
+All are Public Domain (CC0 1.0 Universal) except where noted.
+http://creativecommons.org/publicdomain/zero/1.0/
+
+File mapping, source and license:
+  sedan.glb      <- "Sports Car"   by Quaternius      (Public Domain / CC0)
+  hatchback.glb  <- "Sports Car"   by Quaternius      (Public Domain / CC0)
+  bike.glb       <- "Motorcycle"   by Quaternius      (Public Domain / CC0)
+  truck.glb      <- "Pickup Truck" by Quaternius      (Public Domain / CC0)
+  ev.glb         <- "Car"          by Ignition Labs   (Public Domain / CC0)
+  suv.glb        <- Kenney "Car Kit" (kenney.nl)      (Public Domain / CC0)
+
+Quaternius CC0 assets: https://quaternius.com  /  https://poly.pizza/u/Quaternius
+Kenney CC0 assets:     https://kenney.nl/assets/car-kit
+
+No attribution is required by CC0, but credit is given here voluntarily.
+
+Notes:
+- GLBs are self-contained (textures embedded; no external image references) and
+  use only standard glTF PBR materials (no clearcoat/transmission/variants), so
+  they render correctly with the app's pinned three.js r128 GLTFLoader.

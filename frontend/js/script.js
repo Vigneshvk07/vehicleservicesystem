@@ -287,6 +287,9 @@ const VehicleSVGs = {
     `
 };
 
+// Expose so premium.js can register extra vehicle types (EV, Bus) on the same object
+window.VehicleSVGs = VehicleSVGs;
+
 function loadVehicleShowcase(type = 'car', status = 'RECEIVED') {
     const avatar = document.getElementById("vehicle-avatar");
     const container = document.getElementById("garage-container");
